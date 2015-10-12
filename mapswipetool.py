@@ -23,7 +23,7 @@ from PyQt4.QtCore import ( Qt, QPoint, pyqtSlot )
 from PyQt4.QtGui import ( QCursor )
 
 from qgis.gui import ( QgsMessageBar, QgsMapTool )
-from qgis.core import ( QgsLayerTreeLayer )
+from qgis.core import ( QgsLayerTreeLayer, QgsMapLayerRegistry )
 
 from swipemap import SwipeMap
 
@@ -34,29 +34,31 @@ class MapSwipeTool(QgsMapTool):
     self.view = iface.layerTreeView()
     self.msgBar = iface.messageBar()
     self.swipe = SwipeMap( canvas )
-    self.checkDirection =  self.hasSwipe = None
+    self.checkDirection =  self.hasSwipe = self.disabledSwipe = None
     self.firstPoint = QPoint()
     self.cursorV = QCursor( Qt.SplitVCursor )
     self.cursorH = QCursor( Qt.SplitHCursor )
   
   def activate(self):
-    self.hasSwipe = False
-    canvas = self.canvas() 
-    canvas.mapCanvasRefreshed.connect( self.swipe.setMap )
+    canvas = self.canvas()
     canvas.setCursor( QCursor( Qt.CrossCursor ) )
-    self.view.currentLayerChanged.connect( self.setLayerSwipe )
+
+    canvas.mapCanvasRefreshed.connect( self.swipe.setMap )
+    self.view.currentLayerChanged.connect( self.setLayersSwipe )
+    QgsMapLayerRegistry.instance().removeAll.connect( self.disable )
+
+    self.hasSwipe = False
+    self.disabledSwipe = False
     
     node = self.view.currentNode()
-    if isinstance( node , QgsLayerTreeLayer):
-      self.setLayerSwipe( node.layer() )
-  
+    layer = self.view.currentNode().layer() if isinstance( node, QgsLayerTreeLayer ) else None 
+    self.setLayersSwipe( layer )
+
   def canvasPressEvent(self, e):
-    node = self.view.currentNode()
-    if not isinstance( node , QgsLayerTreeLayer):
-      msg = "Select active layer in legend."
+    if len(self.swipe.layers) == 0:
+      msg = "Select active Layer or Group(with layers)  in legend."
+      self.msgBar.clearWidgets()
       self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.WARNING, 4 )
-      self.swipe.clear()
-      self.hasSwipe = False
       return
     
     self.hasSwipe = True
@@ -66,7 +68,6 @@ class MapSwipeTool(QgsMapTool):
 
   def canvasReleaseEvent(self, e):
     self.hasSwipe = False
-    self.checkDirection = True
     self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
     
   def canvasMoveEvent(self, e):
@@ -82,21 +83,41 @@ class MapSwipeTool(QgsMapTool):
       self.swipe.setLength( e.x(), e.y() )
 
   @pyqtSlot( "QgsMapLayer" )
-  def setLayerSwipe(self, layer):
-    if layer is None:
+  def setLayersSwipe(self, layer):
+    if self.disabledSwipe:
       return
+
+    if layer is None and self.view.currentGroupNode().parent() is None: # Root
+      return
+
+    ids = msg = None
+    if layer is None:
+      group = self.view.currentGroupNode()
+      ids = group.findLayerIds()
+      msg = "Active group is '%s'." % group.name()
+    else:
+      ids = [ layer.id() ]
+      msg = "Active layer is '%s'." % layer.name()
+      
     self.swipe.clear()
-    self.swipe.setLayersId( [ layer.id() ] )
-    msg = "Active layer is %s." % layer.name()
+    self.swipe.setLayersId( ids )
     self.msgBar.clearWidgets()
     self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.INFO, 2 )
     self.swipe.setMap()
 
+  @pyqtSlot()
+  def disable(self):
+    self.swipe.clear()
+    self.hasSwipe = False
+    self.disabledSwipe = True
+  
   def deactivate(self):
       super( MapSwipeTool, self ).deactivate()
       self.deactivated.emit()
       self.swipe.clear()
+
       self.canvas().mapCanvasRefreshed.disconnect( self.swipe.setMap )
-      self.view.currentLayerChanged.disconnect( self.setLayerSwipe )
+      self.view.currentLayerChanged.disconnect( self.setLayersSwipe )
+      QgsMapLayerRegistry.instance().removeAll.disconnect( self.disable )
       
 
