@@ -1,0 +1,21 @@
+[general]
+name=MapSwipe Tool
+description=Swipe active layer with others  layers
+about=This plugin is a tool for swipe active layer, for example, you can see the difference with others layers below.
+  See presentation in http://pt.slideshare.net/LuizMotta3/??
+
+version=0.1
+qgisMinimumVersion=2.8
+# category=
+author=Hirofumi Hayashi and Luiz Motta
+email=hayashi@apptec.co.jp and motta.luiz@gmail.com
+
+changelog=0.1
+  - Start of plugin
+tags=visibility,layers, swipe
+homepage=https://github.com/lmotta/??
+tracker=http://hub.qgis.org/projects/??
+repository=https://github.com/lmotta/??
+icon=mapswipetool.png
+experimental=True
+deprecated=False
