@@ -40,19 +40,14 @@ class MapSwipeTool(QgsMapTool):
     self.cursorH = QCursor( Qt.SplitHCursor )
   
   def activate(self):
-    canvas = self.canvas()
-    canvas.setCursor( QCursor( Qt.CrossCursor ) )
+    self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
 
-    canvas.mapCanvasRefreshed.connect( self.swipe.setMap )
-    self.view.currentLayerChanged.connect( self.setLayersSwipe )
-    QgsMapLayerRegistry.instance().removeAll.connect( self.disable )
+    self._connect()
 
     self.hasSwipe = False
     self.disabledSwipe = False
     
-    node = self.view.currentNode()
-    layer = self.view.currentNode().layer() if isinstance( node, QgsLayerTreeLayer ) else None 
-    self.setLayersSwipe( layer )
+    self.setLayersSwipe( self.view.currentIndex() )
 
   def canvasPressEvent(self, e):
     if len(self.swipe.layers) == 0:
@@ -82,23 +77,37 @@ class MapSwipeTool(QgsMapTool):
         
       self.swipe.setLength( e.x(), e.y() )
 
-  @pyqtSlot( "QgsMapLayer" )
-  def setLayersSwipe(self, layer):
+  def _connect(self, isConnect = True):
+    signal_slot = (
+      { 'signal': self.canvas().mapCanvasRefreshed, 'slot': self.swipe.setMap },
+      { 'signal': self.view.activated, 'slot': self.setLayersSwipe },
+      { 'signal': QgsMapLayerRegistry.instance().removeAll, 'slot': self.disable }
+    )
+    if isConnect:
+      for item in signal_slot:
+        item['signal'].connect( item['slot'] )
+    else:
+      for item in signal_slot:
+        item['signal'].disconnect( item['slot'] )
+
+  @pyqtSlot( "QModelIndex" )
+  def setLayersSwipe(self, index):
     if self.disabledSwipe:
       return
 
-    if layer is None and self.view.currentGroupNode().parent() is None: # Root
-      return
-
     ids = msg = None
-    if layer is None:
-      group = self.view.currentGroupNode()
-      ids = group.findLayerIds()
-      msg = "Active group is '%s'." % group.name()
-    else:
+    node = self.view.currentNode()
+    if isinstance( node, QgsLayerTreeLayer ):
+      layer = node.layer()
       ids = [ layer.id() ]
       msg = "Active layer is '%s'." % layer.name()
-      
+    else:
+      group = self.view.currentGroupNode()
+      if group.parent() is None: # Root
+        return
+      ids = group.findLayerIds()
+      msg = "Active group is '%s'." % group.name()
+
     self.swipe.clear()
     self.swipe.setLayersId( ids )
     self.msgBar.clearWidgets()
@@ -115,9 +124,6 @@ class MapSwipeTool(QgsMapTool):
       super( MapSwipeTool, self ).deactivate()
       self.deactivated.emit()
       self.swipe.clear()
-
-      self.canvas().mapCanvasRefreshed.disconnect( self.swipe.setMap )
-      self.view.currentLayerChanged.disconnect( self.setLayersSwipe )
-      QgsMapLayerRegistry.instance().removeAll.disconnect( self.disable )
+      self._connect( False )
       
 
