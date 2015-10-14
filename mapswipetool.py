@@ -41,7 +41,7 @@ class MapSwipeTool(QgsMapTool):
   
   def tr(self, sourceText):
     context = 'MapSwipeTool'    
-    QCoreApplication.translate( context, sourceText )
+    return QCoreApplication.translate( context, sourceText )
   
   def activate(self):
     self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
