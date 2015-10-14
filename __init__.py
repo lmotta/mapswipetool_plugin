@@ -20,7 +20,7 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
 """
 
 from PyQt4.QtGui import ( QAction, QIcon )
-from PyQt4.QtCore import pyqtSlot
+from PyQt4.QtCore import ( QSettings, QTranslator, qVersion, QCoreApplication, pyqtSlot )
 
 from mapswipetool import MapSwipeTool
 
@@ -32,11 +32,31 @@ def classFactory(iface):
 class MapSwipePlugin:
 
   def __init__(self, iface):
+    
+    def translate():
+      #
+      # For create file 'qm'
+      # 1) Define that files need for translation: mapswipetool.pro
+      # 2) Create 'ts': pylupdate4 -verbose mapswipetool.pro
+      # 3) Edit your translation: QtLinquist
+      # 4) Create 'qm': lrelease *.ts 
+      #
+      dirname = os.path.dirname( os.path.abspath(__file__) )
+      locale = QSettings().value("locale/userLocale")
+      localePath = os.path.join( dirname, "i18n", "%s_%s.qm" % ( name_src, locale ) )
+      if os.path.exists(localePath):
+        self.translator = QTranslator()
+        self.translator.load(localePath)
+        if qVersion() > '4.3.3':
+          QCoreApplication.installTranslator(self.translator)      
+
     self.iface = iface
     self.canvas = iface.mapCanvas() 
-
-    self.action = None
+    self.action = None # Define by initGui
     self.tool = MapSwipeTool( self.iface )
+
+    name_src = "mapswipetool"
+    translate()
 
   def initGui(self):
     title = "Map swipe tool"

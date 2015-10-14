@@ -19,7 +19,7 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import ( Qt, QPoint, pyqtSlot )
+from PyQt4.QtCore import ( Qt, QPoint, pyqtSlot, QCoreApplication )
 from PyQt4.QtGui import ( QCursor )
 
 from qgis.gui import ( QgsMessageBar, QgsMapTool )
@@ -39,6 +39,10 @@ class MapSwipeTool(QgsMapTool):
     self.cursorV = QCursor( Qt.SplitVCursor )
     self.cursorH = QCursor( Qt.SplitHCursor )
   
+  def tr(self, sourceText):
+    context = 'MapSwipeTool'    
+    QCoreApplication.translate( context, sourceText )
+  
   def activate(self):
     self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
 
@@ -51,7 +55,7 @@ class MapSwipeTool(QgsMapTool):
 
   def canvasPressEvent(self, e):
     if len(self.swipe.layers) == 0:
-      msg = "Select active Layer or Group(with layers)  in legend."
+      msg = self.tr( "Select active Layer or Group(with layers) in legend." )
       self.msgBar.clearWidgets()
       self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.WARNING, 4 )
       return
@@ -100,13 +104,13 @@ class MapSwipeTool(QgsMapTool):
     if isinstance( node, QgsLayerTreeLayer ):
       layer = node.layer()
       ids = [ layer.id() ]
-      msg = "Active layer is '%s'." % layer.name()
+      msg = self.tr( "Active layer is '%s'." ) % layer.name()
     else:
       group = self.view.currentGroupNode()
       if group.parent() is None: # Root
         return
       ids = group.findLayerIds()
-      msg = "Active group is '%s'." % group.name()
+      msg = self.tr( "Active group is '%s'." ) % group.name()
 
     self.swipe.clear()
     self.swipe.setLayersId( ids )
