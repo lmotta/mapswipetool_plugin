@@ -3,8 +3,10 @@ name=MapSwipe Tool
 description=Swipe active layer with others layers
 about=This plugin is a map tool for swipe active layer, for example, you can see the difference with others layers below.
   The active layer, or group, will appear above all others.
-  This plugin is developed on the demand of IBAMA(Brazilian Institute of Environment and Renewable Natural Resources)
-  http://www.ibama.gov.br
+  This plugin is developed of collaborative form with IBAMA [1] and APPLIED TECHNOLOGY CO., LTD [2].
+  [1] http://www.ibama.gov.br
+  [2] http://www.apptec.co.jp
+  
   See presentation in http://pt.slideshare.net/LuizMotta3/mapswipetool-plugin
 
 version=0.1
@@ -14,7 +16,7 @@ email=hayashi@apptec.co.jp and motta.luiz@gmail.com
 
 changelog=0.1 (2015-10-14)
   - Start of plugin
-tags=visibility,layers, swipe, IBAMA
+tags=visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO., LTD
 homepage=https://github.com/lmotta/mapswipetool_plugin
 tracker=http://hub.qgis.org/projects/mapswipetool
 repository=https://github.com/lmotta/mapswipetool_plugin
