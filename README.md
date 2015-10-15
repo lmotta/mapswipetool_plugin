@@ -24,7 +24,7 @@ Next version will be work in rotation maps.
 
 ## Changelog
 - 2015-10-15
-Fixed the bug for installation in Windows
+Fixed the bug for installation in Windows and when change of layer/group in legend for others OS (Ex. Windows) 
 - 2015-10-14
  Initial plugin
 
