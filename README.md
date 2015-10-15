@@ -23,6 +23,8 @@ This version is not yet cooperate with rotate map function.
 Next version will be work in rotation maps.
 
 ## Changelog
+- 2015-10-15
+Fixed the bug for installation in Windows
 - 2015-10-14
  Initial plugin
 

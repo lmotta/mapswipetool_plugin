@@ -14,7 +14,9 @@ qgisMinimumVersion=2.8
 author=Hirofumi Hayashi and Luiz Motta
 email=hayashi@apptec.co.jp and motta.luiz@gmail.com
 
-changelog=0.1 (2015-10-14)
+changelog= 0.2 (2015-10-15)
+  - Fixed the bug for installation in Windows 
+  0.1 (2015-10-14)
   - Start of plugin
 tags=visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO., LTD
 homepage=https://github.com/lmotta/mapswipetool_plugin
