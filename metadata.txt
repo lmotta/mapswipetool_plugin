@@ -18,7 +18,7 @@ changelog= 0.2 (2015-10-15)
   - Fixed the bug for installation in Windows 
   0.1 (2015-10-14)
   - Start of plugin
-tags=visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO., LTD
+tags=visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
 homepage=https://github.com/lmotta/mapswipetool_plugin
 tracker=http://hub.qgis.org/projects/mapswipetool
 repository=https://github.com/lmotta/mapswipetool_plugin
