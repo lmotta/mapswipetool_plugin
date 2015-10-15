@@ -4,6 +4,12 @@
 ![][ibama_logo]  
 [Brazilian Institute of Environment and Renewable Natural Resources](http://www.ibama.gov.br)
 
+<!-- APPTEC logo -->
+[apptec_logo]: http://www.apptec.co.jp/assets/images/header_ci.png
+
+![][apptec_logo]  
+[APPLIED TECHNOLOGY CO.,LTD.](http://www.apptec.co.jp)
+
 # Swipe active layer Plugin QGIS
 
 This plugin is a map tool for swipe active layer, for example, you can see the difference with others layers below.
