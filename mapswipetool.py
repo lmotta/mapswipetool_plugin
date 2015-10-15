@@ -51,7 +51,7 @@ class MapSwipeTool(QgsMapTool):
     self.hasSwipe = False
     self.disabledSwipe = False
     
-    self.setLayersSwipe( self.view.currentIndex() )
+    self.setLayersSwipe( None, None )
 
   def canvasPressEvent(self, e):
     if len(self.swipe.layers) == 0:
@@ -84,7 +84,7 @@ class MapSwipeTool(QgsMapTool):
   def _connect(self, isConnect = True):
     signal_slot = (
       { 'signal': self.canvas().mapCanvasRefreshed, 'slot': self.swipe.setMap },
-      { 'signal': self.view.activated, 'slot': self.setLayersSwipe },
+      { 'signal': self.view.selectionModel().selectionChanged, 'slot': self.setLayersSwipe },
       { 'signal': QgsMapLayerRegistry.instance().removeAll, 'slot': self.disable }
     )
     if isConnect:
@@ -94,8 +94,8 @@ class MapSwipeTool(QgsMapTool):
       for item in signal_slot:
         item['signal'].disconnect( item['slot'] )
 
-  @pyqtSlot( "QModelIndex" )
-  def setLayersSwipe(self, index):
+  @pyqtSlot( "QModelIndex, QModelIndex" )
+  def setLayersSwipe(self, selected=None, deselected=None):
     if self.disabledSwipe:
       return
 
