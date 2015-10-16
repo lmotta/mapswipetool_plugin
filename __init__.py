@@ -32,14 +32,14 @@ def classFactory(iface):
 class MapSwipePlugin:
 
   def __init__(self, iface):
-    
+
     def translate():
       #
       # For create file 'qm'
       # 1) Define that files need for translation: mapswipetool.pro
       # 2) Create 'ts': pylupdate4 -verbose mapswipetool.pro
       # 3) Edit your translation: QtLinquist
-      # 4) Create 'qm': lrelease *.ts 
+      # 4) Create 'qm': lrelease *.ts
       #
       dirname = os.path.dirname( os.path.abspath(__file__) )
       locale = QSettings().value("locale/userLocale")
@@ -48,10 +48,10 @@ class MapSwipePlugin:
         self.translator = QTranslator()
         self.translator.load(localePath)
         if qVersion() > '4.3.3':
-          QCoreApplication.installTranslator(self.translator)      
+          QCoreApplication.installTranslator(self.translator)
 
     self.iface = iface
-    self.canvas = iface.mapCanvas() 
+    self.canvas = iface.mapCanvas()
     self.action = None # Define by initGui
     self.tool = MapSwipeTool( self.iface )
 
@@ -66,16 +66,19 @@ class MapSwipePlugin:
     self.action.setWhatsThis( title )
     self.action.setStatusTip( title )
     self.action.triggered.connect( self.run )
+    self.menu = "&Map swipe tool"
 
     # Maptool
     self.action.setCheckable( True )
     self.tool.setAction( self.action )
 
     self.iface.addToolBarIcon( self.action )
+    self.iface.addPluginToMenu( self.menu, self.action )
 
   def unload(self):
     self.canvas.unsetMapTool( self.tool )
     self.iface.removeToolBarIcon( self.action )
+    self.iface.removePluginMenu( self.menu, self.action )
     del self.action
 
   @pyqtSlot()
