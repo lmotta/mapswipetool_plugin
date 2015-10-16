@@ -52,7 +52,11 @@ class SwipeMap(QgsMapCanvasMap):
     self.length = x if self.isVertical else y
     self.update()
       
+<<<<<<< HEAD
   def paint(self, painter, *args): # NEED *args for   WINDOWS!
+=======
+  def paint(self, painter, *args):
+>>>>>>> origin/patch-3
     if len( self.layers ) == 0 or self.length == -1:
       return
   
