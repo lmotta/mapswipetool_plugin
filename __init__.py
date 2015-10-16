@@ -66,16 +66,19 @@ class MapSwipePlugin:
     self.action.setWhatsThis( title )
     self.action.setStatusTip( title )
     self.action.triggered.connect( self.run )
+    self.menu = "&Map swipe tool"
 
     # Maptool
     self.action.setCheckable( True )
     self.tool.setAction( self.action )
 
     self.iface.addToolBarIcon( self.action )
+    self.iface.addPluginToMenu( self.menu, self.action )
 
   def unload(self):
     self.canvas.unsetMapTool( self.tool )
     self.iface.removeToolBarIcon( self.action )
+    self.iface.removePluginMenu( self.menu, self.action )
     del self.action
 
   @pyqtSlot()
