@@ -54,6 +54,7 @@ class MapSwipePlugin:
     self.canvas = iface.mapCanvas() 
     self.action = None # Define by initGui
     self.tool = MapSwipeTool( self.iface )
+    self.prevTool = None # Define by run
 
     name_src = "mapswipetool"
     translate()
@@ -84,4 +85,8 @@ class MapSwipePlugin:
   @pyqtSlot()
   def run(self):
     if self.canvas.mapTool() != self.tool:
-      self.canvas.setMapTool( self.tool)
+      self.prevTool = self.canvas.mapTool()
+      self.canvas.setMapTool( self.tool )
+    else:
+      self.canvas.setMapTool( self.prevTool )
+

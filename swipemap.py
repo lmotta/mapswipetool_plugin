@@ -37,7 +37,6 @@ class SwipeMap(QgsMapCanvasMap):
   def clear(self):
     del self.layers[:]
     self.length = -1
-    self.update()
 
   def setLayersId(self, layers):
     del self.layers[:]
@@ -73,6 +72,9 @@ class SwipeMap(QgsMapCanvasMap):
   def setMap(self):
     def finished():
       super(SwipeMap, self).setContent( job.renderedImage(), self.canvas.extent() )
+
+    if len( self.layers ) == 0:
+      return
 
     settings = QgsMapSettings( self.canvas.mapSettings() )
     settings.setLayers( self.layers )
