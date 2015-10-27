@@ -45,25 +45,18 @@ class MapSwipeTool(QgsMapTool):
   
   def activate(self):
     self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
-
     self._connect()
-
     self.hasSwipe = False
     self.disabledSwipe = False
-    
     self.setLayersSwipe( None, None )
+    self.checkLayer()
 
   def canvasPressEvent(self, e):
-    if len(self.swipe.layers) == 0:
-      msg = self.tr( "Select active Layer or Group(with layers) in legend." )
-      self.msgBar.clearWidgets()
-      self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.WARNING, 4 )
-      return
-    
-    self.hasSwipe = True
-    self.firstPoint.setX( e.x() )
-    self.firstPoint.setY( e.y() )
-    self.checkDirection = True
+    if self.checkLayer():
+      self.hasSwipe = True
+      self.firstPoint.setX( e.x() )
+      self.firstPoint.setY( e.y() )
+      self.checkDirection = True
 
   def canvasReleaseEvent(self, e):
     self.hasSwipe = False
@@ -94,6 +87,15 @@ class MapSwipeTool(QgsMapTool):
       for item in signal_slot:
         item['signal'].disconnect( item['slot'] )
 
+  def checkLayer(self):
+    if len( self.swipe.layers ) == 0:
+      msg = self.tr( "Select active Layer or Group(with layers) in legend." )
+      self.msgBar.clearWidgets()
+      self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.WARNING, 4 )
+      return False
+    else:
+      return True
+
   @pyqtSlot( "QModelIndex, QModelIndex" )
   def setLayersSwipe(self, selected=None, deselected=None):
     if self.disabledSwipe:
@@ -114,9 +116,11 @@ class MapSwipeTool(QgsMapTool):
 
     self.swipe.clear()
     self.swipe.setLayersId( ids )
-    self.msgBar.clearWidgets()
-    self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.INFO, 2 )
     self.swipe.setMap()
+
+    if self.checkLayer():
+      self.msgBar.clearWidgets()
+      self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.INFO, 2 )
 
   @pyqtSlot()
   def disable(self):
