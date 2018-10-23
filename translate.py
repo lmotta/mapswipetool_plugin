@@ -15,30 +15,20 @@ For create file 'qm'
 * pylupdate5 -verbose -translate-function self._tr mapswipetool.pro
 4) Edit your translation: QtLinquist (use Release for create 'qm' file)
 """
+import os
 
 from qgis.PyQt.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication
 from qgis.core import QgsApplication
 
 class Translate():
-  def __init__(self, pluginName, nameDir=None):
+  def __init__(self, pluginName):
     def getFile():
-      pluginPath = "python/plugins/{}".format( nameDir )
-
-      userPath = QFileInfo( QgsApplication.qgisUserDatabaseFilePath() ).path()
-      userPluginPath = "{0}/{1}".format( userPath, pluginPath)
-      
-      systemPath = QgsApplication.prefixPath()
-      systemPluginPath = "{0}/{1}".format( systemPath, pluginPath )
-      
       overrideLocale = QSettings().value('locale/overrideFlag', False, type=bool)
       localeFullName = QLocale.system().name() if not overrideLocale else QSettings().value('locale/userLocale', '')
-
-      qmPathFile = "/i18n/{0}_{1}.qm".format( pluginName, localeFullName )
-      pp = userPluginPath if QFileInfo(userPluginPath).exists() else systemPluginPath
-      return "{0}{1}".format( pp, qmPathFile )
-
-    if nameDir is None:
-      nameDir = pluginName
+      qmPathFile = "i18n/{0}_{1}.qm".format( pluginName, localeFullName )
+      pluginPath = os.path.dirname(__file__)
+      translationFile = "{}/{}".format( pluginPath, qmPathFile )
+      return translationFile
 
     self.translator = None
     translationFile = getFile()

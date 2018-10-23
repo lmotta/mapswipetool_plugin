@@ -23,6 +23,8 @@ This version is not yet cooperate with rotate map function.
 Next version will be work in rotation maps.
 
 ## Changelog
+- 2018-10-23
+Fixed translate
 - 2018-10-18
 Migrated to QGIS 3.2
 - 2015-10-16
