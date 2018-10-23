@@ -18,9 +18,9 @@ email:hayashi@apptec.co.jp,motta.luiz@gmail.com
 # category:
 tags:visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
 
-homepage:https://github.com/lmotta/mapswipetool_plugin
-tracker:http://hub.qgis.org/projects/mapswipetool
-repository:https://github.com/lmotta/mapswipetool_plugin
+homepage:https://github.com/lmotta/mapswipetool
+tracker:https://github.com/lmotta/mapswipetool
+repository:https://github.com/lmotta/mapswipetool
 
 icon:mapswipetool.png
 
