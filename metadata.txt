@@ -9,7 +9,7 @@ about:This plugin is a map tool for swipe active layer.
   
   See presentation in http://pt.slideshare.net/LuizMotta3/mapswipetool-plugin
 
-version:1.0
+version:1.1
 qgisMinimumVersion:3.2
 
 author:Hirofumi Hayashi and Luiz Motta
