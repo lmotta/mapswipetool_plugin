@@ -1,8 +1,9 @@
 # Ignore
 .directory
+__pycache__
 *.pyc
 *.zip
 *.sh
-# Ignore
+# Not Ignore
 !create_zip_plugin.sh
 # Diretory ./i18n NEED .gitignore!

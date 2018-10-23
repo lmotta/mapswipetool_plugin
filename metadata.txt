@@ -1,7 +1,7 @@
 [general]
-name=MapSwipe Tool
-description=Swipe active layer with others layers
-about=This plugin is a map tool for swipe active layer, for example, you can see the difference with others layers below.
+name:MapSwipe Tool
+description:Swipe active layer with others layers
+about:This plugin is a map tool for swipe active layer.
   The active layer, or group, will appear above all others.
   This plugin is developed of collaborative form with IBAMA [1] and APPLIED TECHNOLOGY CO., LTD [2].
   [1] http://www.ibama.gov.br
@@ -9,12 +9,27 @@ about=This plugin is a map tool for swipe active layer, for example, you can see
   
   See presentation in http://pt.slideshare.net/LuizMotta3/mapswipetool-plugin
 
-version=0.5
-qgisMinimumVersion=2.8
-author=Hirofumi Hayashi and Luiz Motta
-email=hayashi@apptec.co.jp,motta.luiz@gmail.com
+version:1.0
+qgisMinimumVersion:3.2
 
-changelog=0.5(2015-10-16)
+author:Hirofumi Hayashi and Luiz Motta
+email:hayashi@apptec.co.jp,motta.luiz@gmail.com
+
+# category:
+tags:visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
+
+homepage:https://github.com/lmotta/mapswipetool_plugin
+tracker:http://hub.qgis.org/projects/mapswipetool
+repository:https://github.com/lmotta/mapswipetool_plugin
+
+icon:mapswipetool.png
+
+experimental:True
+deprecated:False
+
+changelog: 1.0(2018-10-18)
+  Migrated to QGIS 3.2
+  0.5(2015-10-16)
   - When activated plugin, if click it will deactivate plugin
   0.4(2015-10-16)
   - Added Plugins dropdown Menu
@@ -24,10 +39,3 @@ changelog=0.5(2015-10-16)
   - Fixed the bug for installation in Windows 
   0.1 (2015-10-14)
   - Start of plugin
-tags=visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
-homepage=https://github.com/lmotta/mapswipetool_plugin
-tracker=http://hub.qgis.org/projects/mapswipetool
-repository=https://github.com/lmotta/mapswipetool_plugin
-icon=mapswipetool.png
-experimental=True
-deprecated=False

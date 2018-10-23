@@ -19,18 +19,19 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtCore import ( Qt, QPoint, pyqtSlot, QCoreApplication )
-from PyQt4.QtGui import ( QCursor )
+from qgis.PyQt.QtCore import Qt, QPoint, pyqtSlot, QCoreApplication
+from qgis.PyQt.QtGui import QCursor
 
-from qgis.gui import ( QgsMessageBar, QgsMapTool )
-from qgis.core import ( QgsLayerTreeLayer, QgsMapLayerRegistry )
+from qgis.core import QgsLayerTreeLayer, QgsProject
+from qgis.gui import QgsMapTool
 
-from swipemap import SwipeMap
+from .swipemap import SwipeMap
+from .translate import Translate
 
 class MapSwipeTool(QgsMapTool):
   def __init__(self, iface):
     canvas = iface.mapCanvas()
-    super(MapSwipeTool, self).__init__( canvas )
+    super().__init__( canvas )
     self.view = iface.layerTreeView()
     self.msgBar = iface.messageBar()
     self.swipe = SwipeMap( canvas )
@@ -38,18 +39,35 @@ class MapSwipeTool(QgsMapTool):
     self.firstPoint = QPoint()
     self.cursorV = QCursor( Qt.SplitVCursor )
     self.cursorH = QCursor( Qt.SplitHCursor )
+    self.pluginName = 'MapSwipeTool'
+    self.translate = Translate( self.pluginName.lower() )
   
-  def tr(self, sourceText):
-    context = 'MapSwipeTool'    
-    return QCoreApplication.translate( context, sourceText )
-  
+  def _connect(self, isConnect = True):
+    signal_slot = (
+      { 'signal': QgsProject.instance().removeAll, 'slot': self.disable },
+      { 'signal': self.view.selectionModel().selectionChanged, 'slot': self.setLayersSwipe },
+      { 'signal': self.canvas().mapCanvasRefreshed, 'slot': self.swipe.setMap }
+    )
+    if isConnect:
+      for item in signal_slot:
+        item['signal'].connect( item['slot'] )
+    else:
+      for item in signal_slot:
+        item['signal'].disconnect( item['slot'] )
+
   def activate(self):
-    self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
+    super().activate()
+    self.canvas().setCursor( QCursor( Qt.PointingHandCursor ) )
     self._connect()
     self.hasSwipe = False
     self.disabledSwipe = False
     self.setLayersSwipe( None, None )
-    self.checkLayer()
+
+  def deactivate(self):
+      super().deactivate()
+      self.deactivated.emit()
+      self.swipe.clear()
+      self._connect( False )
 
   def canvasPressEvent(self, e):
     if self.checkLayer():
@@ -60,7 +78,7 @@ class MapSwipeTool(QgsMapTool):
 
   def canvasReleaseEvent(self, e):
     self.hasSwipe = False
-    self.canvas().setCursor( QCursor( Qt.CrossCursor ) )
+    self.canvas().setCursor( QCursor( Qt.PointingHandCursor ) )
     
   def canvasMoveEvent(self, e):
     if self.hasSwipe:
@@ -74,64 +92,58 @@ class MapSwipeTool(QgsMapTool):
         
       self.swipe.setLength( e.x(), e.y() )
 
-  def _connect(self, isConnect = True):
-    signal_slot = (
-      { 'signal': self.canvas().mapCanvasRefreshed, 'slot': self.swipe.setMap },
-      { 'signal': self.view.selectionModel().selectionChanged, 'slot': self.setLayersSwipe },
-      { 'signal': QgsMapLayerRegistry.instance().removeAll, 'slot': self.disable }
-    )
-    if isConnect:
-      for item in signal_slot:
-        item['signal'].connect( item['slot'] )
-    else:
-      for item in signal_slot:
-        item['signal'].disconnect( item['slot'] )
-
   def checkLayer(self):
     if len( self.swipe.layers ) == 0:
-      msg = self.tr( "Select active Layer or Group(with layers) in legend." )
+      msg = QCoreApplication.translate('MapSwipeTool', 'Select Layer or Group in legend.')
       self.msgBar.clearWidgets()
-      self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.WARNING, 4 )
+      self.msgBar.pushWarning( self.pluginName, msg )
       return False
     else:
       return True
 
-  @pyqtSlot( "QModelIndex, QModelIndex" )
+  @pyqtSlot('QItemSelection,QItemSelection')
   def setLayersSwipe(self, selected=None, deselected=None):
     if self.disabledSwipe:
       return
 
-    ids = msg = None
+    layers = msg = None
     node = self.view.currentNode()
+    if node.itemVisibilityChecked():
+      node.setItemVisibilityChecked( False )
     if isinstance( node, QgsLayerTreeLayer ):
       layer = node.layer()
-      ids = [ layer.id() ]
-      msg = self.tr( "Active layer is '%s'." ) % layer.name()
+      if not layer.isSpatial():
+        f = QCoreApplication.translate('MapSwipeTool', "Active layer '{}' need be a spatial layer." )
+        msg = f.format( layer.name() )
+        self.msgBar.pushWarning( self.pluginName, msg )
+        return
+      layers = [ layer ]
+      f = QCoreApplication.translate('MapSwipeTool', "Active layer is '{}'." )
+      msg = f.format( layer.name() )
     else:
       group = self.view.currentGroupNode()
       if group.parent() is None: # Root
         return
-      ids = group.findLayerIds()
-      msg = self.tr( "Active group is '%s'." ) % group.name()
+      ltls = list( filter( lambda ltl: ltl.itemVisibilityChecked(),  group.findLayers() ) )
+      if len( ltls ) ==  0:
+        self.msgBar.clearWidgets()
+        f = QCoreApplication.translate('MapSwipeTool', "Active group '{}' need at least one item with visible checked")
+        msg = f.format( group.name() )
+        self.msgBar.pushWarning( self.pluginName, msg )
+        return
+      layers = map( lambda ltl: ltl.layer(), ltls )
+      f = QCoreApplication.translate('MapSwipeTool', "Active group is '{}'.")
+      msg = f.format( group.name() )
 
     self.swipe.clear()
-    self.swipe.setLayersId( ids )
+    self.swipe.setLayers( layers )
     self.swipe.setMap()
 
-    if self.checkLayer():
-      self.msgBar.clearWidgets()
-      self.msgBar.pushMessage( "MapSwipeTool", msg, QgsMessageBar.INFO, 2 )
+    self.msgBar.clearWidgets()
+    self.msgBar.pushInfo( self.pluginName, msg )
 
   @pyqtSlot()
   def disable(self):
     self.swipe.clear()
     self.hasSwipe = False
     self.disabledSwipe = True
-  
-  def deactivate(self):
-      super( MapSwipeTool, self ).deactivate()
-      self.deactivated.emit()
-      self.swipe.clear()
-      self._connect( False )
-      
-

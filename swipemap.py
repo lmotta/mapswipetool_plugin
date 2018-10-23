@@ -18,33 +18,34 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
  *                                                                         *
  ***************************************************************************/
 """
+from qgis.PyQt.QtCore import QRect, QLine, Qt
+from qgis.PyQt.QtGui import QColor, QImage
 
-from PyQt4.QtCore import ( QRect, QLine, pyqtSlot )
+from qgis.core import QgsMapRendererParallelJob, QgsMapSettings
+from qgis.gui import QgsMapCanvasItem
 
-from qgis.core import ( QgsMapRendererParallelJob, QgsMapSettings )
-from qgis.gui import ( QgsMapCanvasMap )
-
-class SwipeMap(QgsMapCanvasMap):
+class SwipeMap(QgsMapCanvasItem):
   def __init__(self, canvas):
-    super(SwipeMap, self).__init__(canvas)
+    super().__init__( canvas )
     self.length = 0
     self.isVertical = True
     self.setZValue(-9.0)
     self.flg = False
     self.layers = []
     self.canvas = canvas
+    self.image = None
       
   def clear(self):
     del self.layers[:]
     self.length = -1
 
-  def setLayersId(self, layers):
-    del self.layers[:]
+  def setLayers(self, layers):
+     # Call clear() before
     for item in layers:
-      self.layers.append(item)
+      self.layers.append( item) 
 
   def setIsVertical(self, isVertical):
-    self.isVertical = isVertical
+    self.isVertical = isVertical 
 
   def setLength(self, x, y):
     y = self.boundingRect().height() - y
@@ -64,22 +65,30 @@ class SwipeMap(QgsMapCanvasMap):
     	w = self.boundingRect().width() - 2
     	line = QLine( 0,h-1,w-1,h-1 )
   
-    image = self.contentImage().copy( 0, 0, w, h )
+    image = self.image.copy( 0, 0, w, h )
     painter.drawImage( QRect( 0,0,w,h ), image )
     painter.drawLine( line )
 
-  @pyqtSlot()
+  # It is a slot, the decorator 'pyqtSlot' fail because QgsMapCanvasItem not is QObject
   def setMap(self):
     def finished():
-      super(SwipeMap, self).setContent( job.renderedImage(), self.canvas.extent() )
+      # https://qgis.org/api/2.18/qgsmapcanvasmap_8cpp_source.html
+      # setContent()
+      image = job.renderedImage()
+      if bool( self.canvas.property('retro') ):
+        image = image.scaled( image.width() / 3, image.height() / 3 )
+        image = image.convertToFormat( QImage.Format_Indexed8, Qt.OrderedDither | Qt.OrderedAlphaDither )
+      self.image = image
 
     if len( self.layers ) == 0:
       return
 
     settings = QgsMapSettings( self.canvas.mapSettings() )
     settings.setLayers( self.layers )
+    settings.setBackgroundColor( QColor( Qt.transparent ) )
     
-    job = QgsMapRendererParallelJob( settings) 
+    self.setRect( self.canvas.extent() )
+    job = QgsMapRendererParallelJob( settings ) 
     job.start()
     job.finished.connect( finished) 
     job.waitForFinished()

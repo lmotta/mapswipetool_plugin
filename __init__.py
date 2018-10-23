@@ -19,45 +19,26 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
  ***************************************************************************/
 """
 
-from PyQt4.QtGui import ( QAction, QIcon )
-from PyQt4.QtCore import ( QSettings, QTranslator, qVersion, QCoreApplication, pyqtSlot )
+from qgis.PyQt.QtCore import QObject, pyqtSlot
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QAction
 
-from mapswipetool import MapSwipeTool
+from .mapswipetool import MapSwipeTool
 
 import os
 
 def classFactory(iface):
   return MapSwipePlugin( iface )
 
-class MapSwipePlugin:
+class MapSwipePlugin(QObject):
 
   def __init__(self, iface):
-    
-    def translate():
-      #
-      # For create file 'qm'
-      # 1) Define that files need for translation: mapswipetool.pro
-      # 2) Create 'ts': pylupdate4 -verbose mapswipetool.pro
-      # 3) Edit your translation: QtLinquist
-      # 4) Create 'qm': lrelease *.ts 
-      #
-      dirname = os.path.dirname( os.path.abspath(__file__) )
-      locale = QSettings().value("locale/userLocale")
-      localePath = os.path.join( dirname, "i18n", "%s_%s.qm" % ( name_src, locale ) )
-      if os.path.exists(localePath):
-        self.translator = QTranslator()
-        self.translator.load(localePath)
-        if qVersion() > '4.3.3':
-          QCoreApplication.installTranslator(self.translator)      
-
+    super().__init__()
     self.iface = iface
     self.canvas = iface.mapCanvas() 
     self.action = None # Define by initGui
     self.tool = MapSwipeTool( self.iface )
     self.prevTool = None # Define by run
-
-    name_src = "mapswipetool"
-    translate()
 
   def initGui(self):
     title = "Map swipe tool"
@@ -82,8 +63,8 @@ class MapSwipePlugin:
     self.iface.removePluginMenu( self.menu, self.action )
     del self.action
 
-  @pyqtSlot()
-  def run(self):
+  @pyqtSlot(bool)
+  def run(self, checked):
     if self.canvas.mapTool() != self.tool:
       self.prevTool = self.canvas.mapTool()
       self.canvas.setMapTool( self.tool )
