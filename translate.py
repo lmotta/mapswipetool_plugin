@@ -10,9 +10,8 @@ email                : motta.luiz@gmail.com
 
 For create file 'qm'
 1) Install pyqt5-dev-tools
-2) Define that files need for translation: mapswipetool.pro
-3) Create 'ts': pylupdate5 -verbose mapswipetool.pro
-* pylupdate5 -verbose -translate-function self._tr mapswipetool.pro
+2) Define that files need for translation: pluginname.pro
+3) Create 'ts': pylupdate5 -verbose pluginname.pro
 4) Edit your translation: QtLinquist (use Release for create 'qm' file)
 """
 import os
