@@ -20,9 +20,10 @@ Hirofumi Hayashi and Luiz Motta
 
 ## Current limitations
 This version is not yet cooperate with rotate map function.
-Next version will be work in rotation maps.
 
 ## Changelog
+- 2018-12-06
+Update metadata
 - 2018-10-23
 Fixed translate
 - 2018-10-18

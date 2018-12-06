@@ -6,10 +6,8 @@ about:This plugin is a map tool for swipe active layer.
   This plugin is developed of collaborative form with IBAMA [1] and APPLIED TECHNOLOGY CO., LTD [2].
   [1] http://www.ibama.gov.br
   [2] http://www.apptec.co.jp
-  
-  See presentation in http://pt.slideshare.net/LuizMotta3/mapswipetool-plugin
 
-version:1.1
+version:1.2
 qgisMinimumVersion:3.2
 
 author:Hirofumi Hayashi and Luiz Motta
@@ -18,16 +16,18 @@ email:hayashi@apptec.co.jp,motta.luiz@gmail.com
 # category:
 tags:visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
 
-homepage:https://github.com/lmotta/mapswipetool
-tracker:https://github.com/lmotta/mapswipetool
+homepage:https://github.com/lmotta/mapswipetool/wiki
+tracker:https://github.com/lmotta/mapswipetool/issues
 repository:https://github.com/lmotta/mapswipetool
 
 icon:mapswipetool.png
 
-experimental:True
+experimental:False
 deprecated:False
 
-changelog:1.1(2018-10-23)
+changelog:1.2(2018-12-06)
+  Update metadata
+  - 1.1(2018-10-23)
   Fixed the translate
   - 1.0
   Migrated to QGIS 3.2
