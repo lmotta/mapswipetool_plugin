@@ -14,6 +14,13 @@ For create file 'qm'
 3) Create 'ts': pylupdate5 -verbose pluginname.pro
 4) Edit your translation: QtLinquist (use Release for create 'qm' file)
 """
+
+__author__ = 'Luiz Motta'
+__date__ = '2018-10-19'
+__copyright__ = '(C) 2016, Luiz Motta'
+__revision__ = '$Format:%H$'
+
+
 import os
 
 from qgis.PyQt.QtCore import QFileInfo, QSettings, QLocale, QTranslator, QCoreApplication

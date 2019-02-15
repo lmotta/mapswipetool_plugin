@@ -19,6 +19,12 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
  ***************************************************************************/
 """
 
+__author__ = 'Luiz Motta'
+__date__ = '2015-10-14'
+__copyright__ = '(C) 2018, Luiz Motta'
+__revision__ = '$Format:%H$'
+
+
 from qgis.PyQt.QtCore import QObject, pyqtSlot
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
