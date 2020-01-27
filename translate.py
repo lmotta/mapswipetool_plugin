@@ -31,9 +31,9 @@ class Translate():
     def getFile():
       overrideLocale = QSettings().value('locale/overrideFlag', False, type=bool)
       localeFullName = QLocale.system().name() if not overrideLocale else QSettings().value('locale/userLocale', '')
-      qmPathFile = "i18n/{0}_{1}.qm".format( pluginName, localeFullName )
+      qmPathFile = f"i18n/{pluginName}_{localeFullName}.qm"
       pluginPath = os.path.dirname(__file__)
-      translationFile = "{}/{}".format( pluginPath, qmPathFile )
+      translationFile = f"{pluginPath}/{qmPathFile}"
       return translationFile
 
     self.translator = None
