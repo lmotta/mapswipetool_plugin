@@ -64,12 +64,12 @@ class SwipeMap(QgsMapCanvasItem):
       return
   
     if self.isVertical:
-    	h = self.boundingRect().height() - 2
-    	w = self.length
+    	h = int(self.boundingRect().height() - 2)
+    	w = int(self.length)
     	line = QLine( w-1,0,w-1,h-1 )
     else:
-    	h = self.boundingRect().height() - self.length
-    	w = self.boundingRect().width() - 2
+    	h = int(self.boundingRect().height() - self.length)
+    	w = int(self.boundingRect().width() - 2)
     	line = QLine( 0,h-1,w-1,h-1 )
   
     image = self.image.copy( 0, 0, w, h )
