@@ -22,6 +22,8 @@ Hirofumi Hayashi and Luiz Motta
 This version is not yet cooperate with rotate map function.
 
 ## Changelog
+- 2024-05-31
+Fixed def paint and setLenght by Heryx
 - 2018-12-06
 Update metadata
 - 2018-10-23
