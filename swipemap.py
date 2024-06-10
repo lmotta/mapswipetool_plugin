@@ -17,14 +17,9 @@ email                : hayashi@apptec.co.jp and motta.luiz@gmail.com
  *   (at your option) any later version.                                   *
  *                                                                         *
  ***************************************************************************/
+
+ The following changes are NOT MY WORK, they are a suggestion from @LreeLenn in ISSUE #19
 """
-
-__author__ = 'Luiz Motta'
-__date__ = '2015-10-14'
-__copyright__ = '(C) 2018, Luiz Motta'
-__revision__ = '$Format:%H$'
-
-
 from qgis.PyQt.QtCore import QRect, QLine, Qt
 from qgis.PyQt.QtGui import QColor, QImage
 
@@ -55,8 +50,8 @@ class SwipeMap(QgsMapCanvasItem):
     self.isVertical = isVertical 
 
   def setLength(self, x, y):
-    y = int(self.boundingRect().height() - y)
-    self.length = int(x) if self.isVertical else int(y)
+    y = self.boundingRect().height() - y
+    self.length = x if self.isVertical else y
     self.update()
       
   def paint(self, painter, *args): # NEED *args for   WINDOWS!
@@ -67,7 +62,6 @@ class SwipeMap(QgsMapCanvasItem):
       h = int(self.boundingRect().height() - 2)
       w = int(self.length)
       line = QLine( w-1,0,w-1,h-1 )
-    
     else:
       h = int(self.boundingRect().height() - self.length)
       w = int(self.boundingRect().width() - 2)
@@ -94,6 +88,8 @@ class SwipeMap(QgsMapCanvasItem):
     settings = QgsMapSettings( self.canvas.mapSettings() )
     settings.setLayers( self.layers )
     settings.setBackgroundColor( QColor( Qt.transparent ) )
+
+    settings.setDevicePixelRatio( 1 )
     
     self.setRect( self.canvas.extent() )
     job = QgsMapRendererParallelJob( settings ) 
