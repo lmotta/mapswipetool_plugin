@@ -25,11 +25,23 @@ __copyright__ = '(C) 2018, Luiz Motta'
 __revision__ = '$Format:%H$'
 
 
-from qgis.PyQt.QtCore import QRect, QLine, Qt
-from qgis.PyQt.QtGui import QColor, QImage
+from qgis.PyQt.QtCore import (
+    Qt,
+    QRect, QLine
+)
+from qgis.PyQt.QtGui import (
+    QColor,
+    QImage
+)
 
-from qgis.core import QgsMapRendererParallelJob, QgsMapSettings
-from qgis.gui import QgsMapCanvas, QgsMapCanvasItem
+from qgis.core import (
+    QgsGeometry,
+    QgsMapRendererParallelJob,
+    QgsMapSettings, QgsMapClippingRegion
+)
+from qgis.gui import (
+    QgsMapCanvas, QgsMapCanvasItem
+)
 
 class SwipeMap(QgsMapCanvasItem):
     def __init__(self, canvas:QgsMapCanvas):
@@ -52,51 +64,54 @@ class SwipeMap(QgsMapCanvasItem):
     def setLength(self, x:float, y:float)->None:
         y = int(self.boundingRect().height() - y )
         self.length = int(x) if self.is_vertical else int(y)
-        self.update()
+        self.updateCanvas() # Call self.paint
       
     def paint(self, painter, *args): # NEED *args for   WINDOWS!
-        def finished(w:int, h:int)->None:
-            image = self.image.copy( 0, 0, w, h )
-            painter.drawImage( QRect( 0,0,w,h ), image )
+        def finished()->None:
+            painter.setClipRect( region )
+            painter.drawImage( 0,0, self.image )
             painter.drawLine( line )
 
         if len( self.layers ) == 0 or self.length == -1:
             return
       
+        region = QRect(0,0,0,0)
         if self.is_vertical:
-            h = int(self.boundingRect().height() - 2)
             w = int(self.length)
+            h = int(self.boundingRect().height() - 2)
+            region.setWidth( w )
+            region.setHeight( h )
             line = QLine( w-1,0,w-1,h-1 )
-            finished(w, h)
+            finished()
 
             return
         
-        h = int(self.boundingRect().height() - self.length)
-        w = int(self.boundingRect().width() - 2)
+        w = int(self.boundingRect().width() - 2) 
+        h = int(self.boundingRect().height() - self.length) 
+        region.setWidth( w )
+        region.setHeight( h )
         line = QLine( 0,h-1,w-1,h-1 )
-        finished(w, h)
+        finished()
 
-  # It is a slot, the decorator 'pyqtSlot' fail because QgsMapCanvasItem not is QObject
+    # It is a slot, the decorator 'pyqtSlot' fail because QgsMapCanvasItem not is QObject
     def setMap(self):
-      def finished():
-          # https://qgis.org/api/2.18/qgsmapcanvasmap_8cpp_source.html
-          # setContent()
-          image = job.renderedImage()
-          if bool( self.canvas.property('retro') ):
-            image = image.scaled( image.width() / 3, image.height() / 3 )
-            image = image.convertToFormat( QImage.Format_Indexed8, Qt.OrderedDither | Qt.OrderedAlphaDither )
-          self.image = image
+        def finished():
+            image = job.renderedImage()
+            if bool( self.canvas.property('retro') ):
+                image = image.scaled( image.width() / 3, image.height() / 3 )
+                image = image.convertToFormat( QImage.Format_Indexed8, Qt.OrderedDither | Qt.OrderedAlphaDither )
+            self.image = image
 
-      if len( self.layers ) == 0:
-          return
+        if len( self.layers ) == 0:
+            return
 
-      settings = QgsMapSettings( self.canvas.mapSettings() )
-      settings.setLayers( self.layers )
-      settings.setBackgroundColor( QColor( Qt.transparent ) )
-      #settings.setDevicePixelRatio( 1 )
-      
-      self.setRect( self.canvas.extent() )
-      job = QgsMapRendererParallelJob( settings ) 
-      job.start()
-      job.finished.connect( finished) 
-      job.waitForFinished()
+        settings = QgsMapSettings( self.canvas.mapSettings() )
+        settings.setLayers( self.layers )
+        settings.setBackgroundColor( QColor( Qt.transparent ) )
+        settings.setDevicePixelRatio( 1 )
+        
+        self.setRect( self.canvas.extent() )
+        job = QgsMapRendererParallelJob( settings ) 
+        job.start()
+        job.finished.connect( finished) 
+        job.waitForFinished()
