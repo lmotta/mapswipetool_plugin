@@ -25,55 +25,83 @@ __copyright__ = '(C) 2018, Luiz Motta'
 __revision__ = '$Format:%H$'
 
 
-from qgis.PyQt.QtCore import QObject, pyqtSlot
+import os
+
+from qgis.PyQt.QtCore import (
+    QObject,
+    QDir,
+    pyqtSlot
+)
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
-from .mapswipetool import MapSwipeTool
+from qgis.gui import QgisInterface, QgsMapTool
 
-import os
+from .ms.ms_maptool import MapSwipeTool
+from .ms.translate import setTranslation
 
-def classFactory(iface):
-  return MapSwipePlugin( iface )
 
-class MapSwipePlugin(QObject):
+def classFactory(iface:QgisInterface):
+    return MapSwipe( iface )
 
-  def __init__(self, iface):
-    super().__init__()
-    self.iface = iface
-    self.canvas = iface.mapCanvas() 
-    self.action = None # Define by initGui
-    self.tool = MapSwipeTool( self.iface )
-    self.prevTool = None # Define by run
+class MapSwipe(QObject):
 
-  def initGui(self):
-    title = "Map swipe tool"
-    icon = QIcon( os.path.join( os.path.dirname(__file__), 'mapswipetool.png' ) )
-    self.action = QAction( icon, title, self.iface.mainWindow() )
-    self.action.setObjectName( "MapSwipeTool" )
-    self.action.setWhatsThis( title )
-    self.action.setStatusTip( title )
-    self.action.triggered.connect( self.run )
-    self.menu = "&Map swipe tool"
+    def __init__(self, iface:QgisInterface):
+        super().__init__()
+        self.iface = iface
+        self.canvas = iface.mapCanvas() 
 
-    # Maptool
-    self.action.setCheckable( True )
-    self.tool.setAction( self.action )
+        setTranslation( type(self).__name__, os.path.dirname(__file__) )
 
-    self.iface.addToolBarIcon( self.action )
-    self.iface.addPluginToMenu( self.menu, self.action )
+        self.plugin_name = 'MapSwipe'
+        self.action_name = 'MapSwipe'
+        self.ms_action = None
+        self.ms_maptool = None
+        self.previus_maptool = None # Define by run
 
-  def unload(self):
-    self.canvas.unsetMapTool( self.tool )
-    self.iface.removeToolBarIcon( self.action )
-    self.iface.removePluginMenu( self.menu, self.action )
-    del self.action
+    def initGui(self):
+        path = QDir( os.path.dirname(__file__) )
+        icon = QIcon( path.filePath('resources/mapswipe.png'))
+        self.ms_action = QAction( icon, self.action_name, self.iface.mainWindow() )
+        self.ms_action.setToolTip( self.action_name )
+        self.ms_action.setCheckable(True)
+        self.ms_action.triggered.connect(self.on_MsClicked)
 
-  @pyqtSlot(bool)
-  def run(self, checked):
-    if self.canvas.mapTool() != self.tool:
-      self.prevTool = self.canvas.mapTool()
-      self.canvas.setMapTool( self.tool )
-    else:
-      self.canvas.setMapTool( self.prevTool )
+        self.canvas.mapToolSet.connect( self.on_MapToolSet )
 
+        self.ms_maptool = MapSwipeTool( self.plugin_name, self.iface )
+        self.previus_maptool = self.canvas.mapTool()
+
+        self.menu_name = f"&{self.action_name}"
+        self.iface.addPluginToMenu( self.menu_name, self.ms_action )
+        self.iface.addToolBarIcon( self.ms_action )
+
+    def unload(self)->None:
+        self.iface.removePluginMenu( self.menu_name, self.ms_action )
+        self.iface.removeToolBarIcon( self.ms_action )
+        
+        if self.ms_maptool:
+            self.canvas.unsetMapTool( self.ms_maptool )
+        
+        # Disconnect
+        try:
+            self.ms_action.triggered.disconnect( self.on_MsClicked )
+        except Exception:
+            pass
+        self.ms_action.deleteLater()
+
+        del self.ms_maptool
+
+
+    @pyqtSlot(bool)
+    def on_MsClicked(self, enabled:bool)->None:
+        if enabled:
+            self.previus_maptool = self.canvas.mapTool()
+            self.canvas.setMapTool( self.ms_maptool )
+            return
+        self.canvas.setMapTool( self.previus_maptool )
+
+    @pyqtSlot(QgsMapTool, QgsMapTool)
+    def on_MapToolSet(self, newTool:QgsMapTool, oldTool:QgsMapTool)->None:
+        if oldTool == self.ms_maptool:
+            self.ms_action.setChecked(False)
