@@ -27,54 +27,61 @@ __revision__ = '$Format:%H$'
 
 from qgis.PyQt.QtCore import (
     Qt,
-    QRect, QLine
+    QRect, QLine,
+    QObject, pyqtSignal
 )
 from qgis.PyQt.QtGui import (
     QColor,
-    QImage
+    QImage, QPainter
 )
 
 from qgis.core import (
-    QgsGeometry,
     QgsMapRendererParallelJob,
-    QgsMapSettings, QgsMapClippingRegion
+    QgsMapSettings
 )
 from qgis.gui import (
     QgsMapCanvas, QgsMapCanvasItem
 )
 
+
+class SwipeSignals(QObject):
+    creatingImage = pyqtSignal()
+    finishedImage = pyqtSignal()
+
 class SwipeMap(QgsMapCanvasItem):
     def __init__(self, canvas:QgsMapCanvas):
+        self.canvas = canvas
         super().__init__( canvas )
+        self.setZValue(10)
+
+        self.signals = SwipeSignals()
+        self.layers = []
+        self.image = None
         self.length = 0
         self.is_vertical = True
-        self.setZValue(-9.0)
         self.flg = False
-        self.layers = []
-        self.canvas = canvas
-        self.image = None
       
     def clear(self)->None:
-        del self.layers[:]
+        self.layers = []
+        self.image = None
         self.length = -1
-
-    def setLayers(self, layers):
-        self.layers = [ item for item in layers ]
+        self.updateCanvas()
 
     def setLength(self, x:float, y:float)->None:
         y = int(self.boundingRect().height() - y )
         self.length = int(x) if self.is_vertical else int(y)
         self.updateCanvas() # Call self.paint
       
-    def paint(self, painter, *args): # NEED *args for   WINDOWS!
+    def paint(self, painter:QPainter, *args): # NEED *args for   WINDOWS!
         def finished()->None:
             painter.setClipRect( region )
             painter.drawImage( 0,0, self.image )
+            painter.setRenderHint( QPainter.Antialiasing ) # Smooths edges
             painter.drawLine( line )
 
-        if len( self.layers ) == 0 or self.length == -1:
+        if not self.layers or self.length == -1 or self.image is None:
             return
-      
+
         region = QRect(0,0,0,0)
         if self.is_vertical:
             w = int(self.length)
@@ -94,24 +101,35 @@ class SwipeMap(QgsMapCanvasItem):
         finished()
 
     # It is a slot, the decorator 'pyqtSlot' fail because QgsMapCanvasItem not is QObject
-    def setMap(self):
+    def setImage(self):
+        def createMapSettings():
+            settings = QgsMapSettings()
+            settings.setBackgroundColor(QColor(Qt.transparent))
+            settings.setDevicePixelRatio( 1 )
+            settings.setLayers( self.layers )
+            settings.setDestinationCrs( self.canvas.mapSettings().destinationCrs() )
+            settings.setOutputSize( self.canvas.size() )
+            settings.setExtent( self.canvas.extent() )
+            
+            return settings
+
         def finished():
             image = job.renderedImage()
             if bool( self.canvas.property('retro') ):
                 image = image.scaled( image.width() / 3, image.height() / 3 )
                 image = image.convertToFormat( QImage.Format_Indexed8, Qt.OrderedDither | Qt.OrderedAlphaDither )
             self.image = image
+            self.signals.finishedImage.emit()
+            self.updateCanvas()
 
-        if len( self.layers ) == 0:
+        if not self.layers:
             return
 
-        settings = QgsMapSettings( self.canvas.mapSettings() )
-        settings.setLayers( self.layers )
-        settings.setBackgroundColor( QColor( Qt.transparent ) )
-        settings.setDevicePixelRatio( 1 )
-        
+        self.signals.creatingImage.emit()
+
         self.setRect( self.canvas.extent() )
-        job = QgsMapRendererParallelJob( settings ) 
+        self.image = None
+        job = QgsMapRendererParallelJob( createMapSettings() ) 
         job.start()
-        job.finished.connect( finished) 
-        job.waitForFinished()
+        job.finished.connect( finished ) 
+        #job.waitForFinished()

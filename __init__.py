@@ -37,8 +37,8 @@ from qgis.PyQt.QtWidgets import QAction
 
 from qgis.gui import QgisInterface, QgsMapTool
 
-from .ms.ms_maptool import MapSwipeTool
-from .ms.translate import setTranslation
+from .tool.maptool import MapSwipeTool
+from .tool.translate import setTranslation
 
 
 def classFactory(iface:QgisInterface):
@@ -55,53 +55,58 @@ class MapSwipe(QObject):
 
         self.plugin_name = 'MapSwipe'
         self.action_name = 'MapSwipe'
-        self.ms_action = None
-        self.ms_maptool = None
+        self.action = None
+        self.maptool = None
         self.previus_maptool = None # Define by run
 
     def initGui(self):
         path = QDir( os.path.dirname(__file__) )
         icon = QIcon( path.filePath('resources/mapswipe.png'))
-        self.ms_action = QAction( icon, self.action_name, self.iface.mainWindow() )
-        self.ms_action.setToolTip( self.action_name )
-        self.ms_action.setCheckable(True)
-        self.ms_action.triggered.connect(self.on_MsClicked)
+        self.action = QAction( icon, self.action_name, self.iface.mainWindow() )
+        self.action.setToolTip( self.action_name )
+        self.action.setCheckable(True)
 
+        self.action.triggered.connect(self.on_Clicked)
         self.canvas.mapToolSet.connect( self.on_MapToolSet )
 
-        self.ms_maptool = MapSwipeTool( self.plugin_name, self.iface )
+        self.maptool = MapSwipeTool( self.plugin_name, self.iface )
         self.previus_maptool = self.canvas.mapTool()
 
         self.menu_name = f"&{self.action_name}"
-        self.iface.addPluginToMenu( self.menu_name, self.ms_action )
-        self.iface.addToolBarIcon( self.ms_action )
+        self.iface.addPluginToMenu( self.menu_name, self.action )
+        self.iface.addToolBarIcon( self.action )
 
     def unload(self)->None:
-        self.iface.removePluginMenu( self.menu_name, self.ms_action )
-        self.iface.removeToolBarIcon( self.ms_action )
+        self.iface.removePluginMenu( self.menu_name, self.action )
+        self.iface.removeToolBarIcon( self.action )
+        self.iface.unregisterMainWindowAction( self.action )
         
-        if self.ms_maptool:
-            self.canvas.unsetMapTool( self.ms_maptool )
+        if self.maptool:
+            self.canvas.unsetMapTool( self.maptool )
         
         # Disconnect
         try:
-            self.ms_action.triggered.disconnect( self.on_MsClicked )
+            self.action.triggered.disconnect( self.on_Clicked )
         except Exception:
             pass
-        self.ms_action.deleteLater()
+        self.action.deleteLater()
 
-        del self.ms_maptool
-
+        del self.maptool
 
     @pyqtSlot(bool)
-    def on_MsClicked(self, enabled:bool)->None:
+    def on_Clicked(self, enabled:bool)->None:
         if enabled:
+            if not self.maptool.canExecute():
+                self.action.setChecked(False)
+                return
+
             self.previus_maptool = self.canvas.mapTool()
-            self.canvas.setMapTool( self.ms_maptool )
+            self.canvas.setMapTool( self.maptool )
             return
+
         self.canvas.setMapTool( self.previus_maptool )
 
     @pyqtSlot(QgsMapTool, QgsMapTool)
     def on_MapToolSet(self, newTool:QgsMapTool, oldTool:QgsMapTool)->None:
-        if oldTool == self.ms_maptool:
-            self.ms_action.setChecked(False)
+        if oldTool == self.maptool:
+            self.action.setChecked(False)

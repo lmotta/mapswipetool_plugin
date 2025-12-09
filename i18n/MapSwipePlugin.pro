@@ -1,5 +1,5 @@
 SOURCES += \
-../mapswipetool.py
+../tool/maptool.py
 
 TRANSLATIONS += \
 ./pt.ts
