@@ -76,7 +76,7 @@ class SwipeMap(QgsMapCanvasItem):
         def finished()->None:
             painter.setClipRect( region )
             painter.drawImage( 0,0, self.image )
-            painter.setRenderHint( QPainter.Antialiasing ) # Smooths edges
+            painter.setRenderHint( QPainter.RenderHint.Antialiasing ) # Smooths edges
             painter.drawLine( line )
 
         if not self.layers or self.length == -1 or self.image is None:
@@ -104,7 +104,7 @@ class SwipeMap(QgsMapCanvasItem):
     def setImage(self):
         def createMapSettings():
             settings = QgsMapSettings()
-            settings.setBackgroundColor(QColor(Qt.transparent))
+            settings.setBackgroundColor(QColor(Qt.GlobalColor.transparent))
             settings.setDevicePixelRatio( 1 )
             settings.setLayers( self.layers )
             settings.setDestinationCrs( self.canvas.mapSettings().destinationCrs() )
@@ -117,7 +117,7 @@ class SwipeMap(QgsMapCanvasItem):
             image = job.renderedImage()
             if bool( self.canvas.property('retro') ):
                 image = image.scaled( image.width() / 3, image.height() / 3 )
-                image = image.convertToFormat( QImage.Format_Indexed8, Qt.OrderedDither | Qt.OrderedAlphaDither )
+                image = image.convertToFormat( QImage.Format.Format_Indexed8, Qt.ImageConversionFlag.OrderedDither | Qt.ImageConversionFlag.OrderedAlphaDither )
             self.image = image
             self.signals.finishedImage.emit()
             self.updateCanvas()

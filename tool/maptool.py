@@ -61,8 +61,8 @@ class MapSwipeTool(QgsMapTool):
         self.project = QgsProject.instance()
         self.has_direction, self.has_swipe, self.disabled_swipe = None, None, None
         self.first_point = QPoint()
-        self.cursor_v = QCursor( Qt.SplitVCursor )
-        self.cursor_h = QCursor( Qt.SplitHCursor )
+        self.cursor_v = QCursor( Qt.CursorShape.SplitVCursor )
+        self.cursor_h = QCursor( Qt.CursorShape.SplitHCursor )
 
         self.swipe_map = SwipeMap( self.canvas )
 
@@ -171,7 +171,7 @@ class MapSwipeTool(QgsMapTool):
     @pyqtSlot()
     def activate(self)->None:
         super().activate()
-        self.canvas.setCursor( QCursor( Qt.PointingHandCursor ) )
+        self.canvas.setCursor( QCursor( Qt.CursorShape.PointingHandCursor ) )
         self._connect()
         self.has_swipe = False
         self.disabled_swipe = False
@@ -194,14 +194,14 @@ class MapSwipeTool(QgsMapTool):
             return
 
         self.has_swipe = True
-        self.first_point.setX( e.x() )
-        self.first_point.setY( e.y() )
+        self.first_point.setX( e.pos().x() )
+        self.first_point.setY( e.pos().y() )
         self.has_direction = False
 
     @pyqtSlot(QgsMapMouseEvent)
     def canvasReleaseEvent(self, e:QgsMapMouseEvent)->None:
         self.has_swipe = False
-        self.canvas.setCursor( QCursor( Qt.PointingHandCursor ) )
+        self.canvas.setCursor( QCursor( Qt.CursorShape.PointingHandCursor ) )
     
     @pyqtSlot(QgsMapMouseEvent)
     def canvasMoveEvent(self, e:QgsMapMouseEvent)->None:
@@ -209,10 +209,10 @@ class MapSwipeTool(QgsMapTool):
             return
 
         if not self.has_direction:
-            dX = abs( e.x() - self.first_point.x() )
-            dY = abs( e.y() - self.first_point.y() )
+            dX = abs( e.pos().x() - self.first_point.x() )
+            dY = abs( e.pos().y() - self.first_point.y() )
             self.swipe_map.is_vertical = dX > dY
             self.has_direction = True
             self.canvas.setCursor( self.cursor_h if self.swipe_map.is_vertical else self.cursor_v )
         
-        self.swipe_map.setLength( e.x(), e.y() )
+        self.swipe_map.setLength( e.pos().x(), e.pos().y() )
