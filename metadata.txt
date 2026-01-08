@@ -1,31 +1,35 @@
 [general]
-name:MapSwipe Tool
-description:Swipe active layer with others layers
-about:This plugin is a map tool for swipe active layer.
+name=MapSwipe Tool
+description=Swipe active layer with others layers
+about=This plugin is a map tool for swipe active layer.
   The active layer, or group, will appear above all others.
   This plugin is developed of collaborative form with IBAMA [1] and APPLIED TECHNOLOGY CO., LTD [2].
   [1] http://www.ibama.gov.br
   [2] http://www.apptec.co.jp
 
-version:1.4
-qgisMinimumVersion:3.40
+version=1.5
+qgisMinimumVersion=3.99
+qgisMaximumVersion=4.99
+supportsQt6=True
 
-author:Hirofumi Hayashi and Luiz Motta
-email:hayashi@apptec.co.jp,motta.luiz@gmail.com
+author=Hirofumi Hayashi and Luiz Motta
+email=hayashi@apptec.co.jp,motta.luiz@gmail.com
 
 # category:
-tags:visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
+tags=visibility,layers, swipe, IBAMA, APPLIED TECHNOLOGY CO.
 
-homepage:https://github.com/lmotta/mapswipetool_plugin/wiki
-tracker:https://github.com/lmotta/mapswipetool_plugin/issues
-repository:https://github.com/lmotta/mapswipetool_plugin
+homepage=https://github.com/lmotta/mapswipetool_plugin/wiki
+tracker=https://github.com/lmotta/mapswipetool_plugin/issues
+repository=https://github.com/lmotta/mapswipetool_plugin
 
-icon:mapswipetool.png
+icon=mapswipetool.png
 
-experimental:False
-deprecated:False
+experimental=False
+deprecated=False
 
-changelog:1.4 (2025-12-09)
+changelog=1.5(2025-01-08)
+  Upgrade to Qt6 and QGIS 4.x
+  - 1.4(2025-12-09)
   Fixed issue #11, added "settings.setDevicePixelRatio( 1 )"
   - 1.3(2024-05-31)
   Fixed def paint and setLenght
